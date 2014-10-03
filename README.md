@@ -26,5 +26,6 @@ See other
 [chromaticity](): A 
 [Philips Hue compatible REST API](http://www.developers.meethue.com/philips-hue-api) 
 to control RGB(+) LED lights, includes go-kinet as a backend
+
 [kinet](https://github.com/vishnubob/kinet): A python library for controlling
 Color Kinetics lights (and a large help in developing this library!)
