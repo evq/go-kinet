@@ -6,9 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"image/color"
-	"io/ioutil"
 	"log"
-	"math"
 	"net"
 	"os"
 	"strings"
@@ -119,16 +117,12 @@ type Fixture struct {
 	PS      *PowerSupply `json:"-"`
 }
 
-func init() {
-	log.SetOutput(ioutil.Discard)
-}
+var trace = false
+var traceLog *log.Logger
 
-func gammaCorrect(c color.Color) color.Color {
-	r, g, b, _ := c.RGBA()
-	r_fix := uint8(math.Pow(float64(r)/UINT16_MAX, 2.2) * 255.0)
-	g_fix := uint8(math.Pow(float64(g)/UINT16_MAX, 2.2) * 255.0)
-	b_fix := uint8(math.Pow(float64(b)/UINT16_MAX, 2.2) * 255.0)
-	return color.RGBA{r_fix, g_fix, b_fix, 0xff}
+func TraceLog(logger *log.Logger) {
+  traceLog = logger
+  trace = traceLog != nil
 }
 
 func (fixture *Fixture) SendColor(c color.Color) {
@@ -143,7 +137,6 @@ func (fixture *Fixture) SendColor(c color.Color) {
 		colors[f.Channel+2] = byte((b * UINT8_MAX) / UINT16_MAX)
 	}
 
-	c = gammaCorrect(c)
 	r, g, b, _ := c.RGBA()
 	// Go color interface returns 32 bit ints, but max is of a 16 bit int
 	// We need them scaled such that they are 8 bit
@@ -319,7 +312,9 @@ func sendKinetPacket(host string, packet []byte, resp chan []byte) {
 	// need to modify this, for no need to wait for fixture lookup or color set
 	conn.SetReadDeadline(time.Now().Add(3 * time.Second))
 
-	log.Printf("% X", packet)
+  if trace {
+    traceLog.Printf("% X", packet)
+  }
 	_, err = conn.WriteToUDP(packet, raddr)
 	if err != nil {
 		os.Exit(2)
