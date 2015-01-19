@@ -158,23 +158,16 @@ func (fixture *Fixture) SendColor(c color.Color) {
 }
 
 func (ps *PowerSupply) SendColors(c []color.Color) {
-	//if len(c) > (KINET_NUM_PIXELS) {
-	// return error
-	//}
-
-	colors := make([]byte, len(c)*3)
-	for i := 0; i < len(c); i++ {
-		r, g, b, _ := c[i].RGBA()
-		// Go color interface returns 32 bit ints, but max is of a 16 bit int
-		// We need them scaled such that they are 8 bit
-		colors[(i * 3)] = byte((r * UINT8_MAX) / UINT16_MAX)
-		colors[(i*3)+1] = byte((g * UINT8_MAX) / UINT16_MAX)
-		colors[(i*3)+2] = byte((b * UINT8_MAX) / UINT16_MAX)
-	}
+	colors := make([]byte, 255)
 
 	if ps.Fixtures != nil {
 		for i := range ps.Fixtures {
-			ps.Fixtures[i].Color = c[ps.Fixtures[i].Channel/3]
+			ps.Fixtures[i].Color = c[i]
+      r, g, b, _ := c[i].RGBA()
+      channel := int(ps.Fixtures[i].Channel)
+      colors[channel] = byte((r * UINT8_MAX) / UINT16_MAX)
+      colors[channel + 1] = byte((g * UINT8_MAX) / UINT16_MAX)
+      colors[channel + 2] = byte((b * UINT8_MAX) / UINT16_MAX)
 		}
 	}
 
